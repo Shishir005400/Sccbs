@@ -1,0 +1,291 @@
+// Correct Code.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
+#include <iostream>
+#include <vector>
+#include <string>
+#include <regex>
+#include <unordered_map>
+#include <limits>
+using namespace std;
+
+// Structure for User
+struct User {
+    string name;
+    string email;
+    string password;
+    bool isAdmin;
+    bool isActive;
+};
+
+// Global user list with one default admin
+vector<User> users = {
+    {"Admin", "admin@sys.com", "Admin123", true, true},
+    {"UserOne", "user1@example.com", "User1234", false, true},
+    {"UserTwo", "user2@example.com", "User5678", false, true}
+};
+
+// Pricing map
+unordered_map<string, double> pricing = {
+    {"Print", 0.20},
+    {"Scan", 0.10}
+};
+
+// Validate email format
+bool validateEmail(string input) {
+    regex pattern(R"((\w+)(\.\w+)*@(\w+)(\.\w+)+)");
+    return regex_match(input, pattern);
+}
+
+// Validate strong password
+bool validatePassword(string input) {
+    regex pattern("^(?=.*[A-Z])(?=.*\\d).{8,}$");
+    return regex_match(input, pattern);
+}
+
+// User registration function
+void registerUser() {
+    User user;
+
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');  // Flush buffer
+
+    cout << "Enter name: ";
+    getline(cin, user.name);
+
+    if (user.name.empty()) {
+        cout << "Name cannot be empty." << endl;
+        return;
+    }
+
+    do {
+        cout << "Enter email: ";
+        getline(cin, user.email);
+
+        if (!validateEmail(user.email)) {
+            cout << "Invalid email format." << endl;
+            continue;
+        }
+
+        // Check for duplicate email
+        bool exists = false;
+        for (const auto& u : users) {
+            if (u.email == user.email) {
+                cout << "Email already registered." << endl;
+                return;
+            }
+        }
+    } while (!validateEmail(user.email));
+
+    do {
+        cout << "Enter strong password (min 8 chars, 1 uppercase, 1 digit): ";
+        getline(cin, user.password);
+
+        if (!validatePassword(user.password)) {
+            cout << "Invalid password. Try again." << endl;
+        }
+    } while (!validatePassword(user.password));
+
+    user.isAdmin = false;
+    user.isActive = true;
+    users.push_back(user);
+    cout << "Registration successful!" << endl;
+}
+
+// Login function
+int login(string& email) {
+    string password;
+    cout << "Enter Email: ";
+    cin >> email;
+    cout << "Enter Password: ";
+    cin >> password;
+
+    for (int i = 0; i < users.size(); i++) {
+        if (users[i].email == email && users[i].password == password && users[i].isActive) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// Show active users
+void showActiveUsers() {
+    cout << "\nActive Users:" << endl;
+    for (const auto& user : users) {
+        if (user.isActive) {
+            cout << "- " << user.email << endl;
+        }
+    }
+}
+
+// Inactivate a user
+void deleteUser() {
+    string targetEmail;
+    cout << "Enter the email of the user to inactivate: ";
+    cin >> targetEmail;
+
+    bool found = false;
+    for (auto& user : users) {
+        if (user.email == targetEmail && user.isActive) {
+            user.isActive = false;
+            cout << "User " << user.email << " has been inactivated." << endl;
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << "User not found or already inactive." << endl;
+    }
+}
+
+// Update pricing
+void updatePricing() {
+    string service;
+    double newPrice;
+    cout << "Enter service to update (Print/Scan): ";
+    cin >> service;
+
+    if (service != "Print" && service != "Scan") {
+        cout << "Invalid service name." << endl;
+        return;
+    }
+
+    cout << "Current price for " << service << ": $" << pricing[service] << endl;
+    cout << "Enter new price: $";
+    cin >> newPrice;
+
+    if (newPrice < 0) {
+        cout << "Price must be non-negative." << endl;
+        return;
+    }
+
+    pricing[service] = newPrice;
+    cout << service << " price updated to $" << newPrice << endl;
+}
+
+// Print documents
+void printDocuments() {
+    int pages;
+    cout << "Enter number of pages to print: ";
+    cin >> pages;
+
+    if (pages <= 0) {
+        cout << "Number of pages must be positive." << endl;
+        return;
+    }
+
+    double cost = pages * pricing["Print"];
+    cout << "Printed " << pages << " pages. Total cost: $" << cost << endl;
+}
+
+// Scan documents
+void scanDocuments() {
+    int pages;
+    cout << "Enter number of pages to scan: ";
+    cin >> pages;
+
+    if (pages <= 0) {
+        cout << "Number of pages must be positive." << endl;
+        return;
+    }
+
+    double cost = pages * pricing["Scan"];
+    cout << "Scanned " << pages << " pages. Total cost: $" << cost << endl;
+}
+
+// User menu
+void userMenu() {
+    int choice;
+    do {
+        cout << "\n--- User Menu ---" << endl;
+        cout << "1. Print Documents" << endl;
+        cout << "2. Scan Documents" << endl;
+        cout << "3. Logout" << endl;
+        cout << "Choice: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1: printDocuments(); break;
+        case 2: scanDocuments(); break;
+        case 3: cout << "Logging out..." << endl; break;
+        default: cout << "Invalid choice. Try again." << endl;
+        }
+    } while (choice != 3);
+}
+
+// Admin menu
+void adminMenu() {
+    int choice;
+    do {
+        cout << "\n--- Admin Dashboard ---" << endl;
+        cout << "1. Show Active Users" << endl;
+        cout << "2. Inactivate User" << endl;
+        cout << "3. Update Pricing" << endl;
+        cout << "4. Print Documents" << endl;
+        cout << "5. Scan Documents" << endl;
+        cout << "6. Logout" << endl;
+        cout << "Choice: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1: showActiveUsers(); break;
+        case 2: deleteUser(); break;
+        case 3: updatePricing(); break;
+        case 4: printDocuments(); break;
+        case 5: scanDocuments(); break;
+        case 6: cout << "Logging out..." << endl; break;
+        default: cout << "Invalid choice. Try again." << endl;
+        }
+    } while (choice != 6);
+}
+
+// Main menu
+int main() {
+    int choice;
+    do {
+        cout << "\n--- Skyline Cyber Café Billing System ---" << endl;
+        cout << "1. Register User" << endl;
+        cout << "2. Login" << endl;
+        cout << "3. Exit" << endl;
+        cout << "Choice: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1: registerUser(); break;
+        case 2: {
+            string email;
+            int userIndex = login(email);
+            if (userIndex != -1) {
+                if (users[userIndex].isAdmin) {
+                    cout << "\nWelcome Admin: " << users[userIndex].name << endl;
+                    adminMenu();
+                }
+                else {
+                    cout << "\nWelcome User: " << users[userIndex].name << endl;
+                    userMenu();
+                }
+            }
+            else {
+                cout << "Invalid login or user not active." << endl;
+            }
+            break;
+        }
+        case 3:
+            cout << "Exiting system. Thank you!" << endl;
+            break;
+        default:
+            cout << "Invalid choice. Try again." << endl;
+        }
+    } while (choice != 3);
+
+    return 0;
+}
+// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
+// Debug program: F5 or Debug > Start Debugging menu
+
+// Tips for Getting Started: 
+//   1. Use the Solution Explorer window to add/manage files
+//   2. Use the Team Explorer window to connect to source control
+//   3. Use the Output window to see build output and other messages
+//   4. Use the Error List window to view errors
+//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
+//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
