@@ -1,0 +1,21 @@
+.vs/
+*.user
+*.suo
+*.ncb
+*.obj
+*.log
+*.tlog
+*.ipch
+*.pch
+*.exe
+*.pdb
+*.dll
+*.cache
+*.db
+*.opensdf
+*.sdf
+*.sln.docstates
+
+# Ignore system/backup files
+*.tmp
+*.~*
