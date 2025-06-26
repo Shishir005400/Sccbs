@@ -1,7 +1,7 @@
 #Sccbs - Skyline Cyber Cafe Billing System
 ## - Project
 This project is for billing system designed for Skyline Cyber Cafe. This system helps user to manage the billing system as it prints and scans the document, It is developed using C++..
-## 🚀 Features Implemented
+## Features Implemented
 - **Admin Pricing Update:** Allows the admin to change pricing per hour.
 - **User Sessions Management:** Tracks login/logout times to calculate charges.
 - **Billing Output:** Automatically generates billing details.
